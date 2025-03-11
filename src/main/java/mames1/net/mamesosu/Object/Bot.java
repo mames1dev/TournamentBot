@@ -68,7 +68,7 @@ public class Bot {
                         CacheFlag.STICKER,
                         CacheFlag.SCHEDULED_EVENTS
                 ).setActivity(
-                        Activity.playing("試合開始を待機しています..")) // ここでステータスを変更できます!
+                        Activity.playing("試合開始を待機しています!")) // ここでステータスを変更できます!
                 .addEventListeners(
                         new Start(), //トーナメdントの開始を検知するイベント
                         new Ban(), //Banを行うイベント

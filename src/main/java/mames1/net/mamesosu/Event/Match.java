@@ -7,6 +7,7 @@ import mames1.net.mamesosu.Main;
 import mames1.net.mamesosu.Object.MySQL;
 import mames1.net.mamesosu.Utils.Modal;
 import net.dv8tion.jda.api.EmbedBuilder;
+import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.events.interaction.ModalInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -86,6 +87,28 @@ public class Match extends ListenerAdapter {
         }
     }
 
+    private static boolean checkBeatmap(int beatmap) {
+        MySQL mySQL = new MySQL();
+        Connection connection = null;
+        PreparedStatement ps;
+        ResultSet result;
+
+        try {
+            connection = mySQL.getConnection();
+            ps = connection.prepareStatement("select * from beatmaps where beatmapid = ?");
+            ps.setInt(1, beatmap);
+            result = ps.executeQuery();
+
+            if(result.next()) {
+                return true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
+
 
     public static JsonNode getNodeData(String url) {
 
@@ -153,6 +176,8 @@ public class Match extends ListenerAdapter {
     public void startSchedule(ModalInteractionEvent e) {
         final int[] size = {0};
 
+        e.getJDA().getPresence().setActivity(Activity.watching("マッチを開始します!"));
+
         Timer timer = new Timer();
         TimerTask timerTask = new TimerTask() {
             @Override
@@ -185,6 +210,16 @@ public class Match extends ListenerAdapter {
 
                 if (lastGameNode.get("scores").isEmpty()) {
                     System.out.println("score is empty");
+                    return;
+                }
+
+                if (!lastGameNode.get("scoring_type").asText().equals("3")) {
+                    System.out.println("scoring type error");
+                    return;
+                }
+
+                if(checkBeatmap(Integer.parseInt(lastGameNode.get("beatmap_id").asText()))) {
+                    System.out.println("beatmap error");
                     return;
                 }
 
@@ -239,6 +274,8 @@ public class Match extends ListenerAdapter {
                 team2_total = team2_scores.stream().mapToInt(Score::getScore).sum();
 
                 Main.tourney.setTeam_point(team1_total > team2_total ? 1 : 2);
+
+                e.getJDA().getPresence().setActivity(Activity.watching("Red " + Main.tourney.getTeam_point(1) + " - " + Main.tourney.getTeam_point(2) + " Blue"));
 
                 eb.addField("**:red_circle: Redチーム " + String.format("%,d", team1_total) + "**", getScoreFormat(slot, team1_scores), false);
                 eb.addField("**:blue_circle: Blueチーム " + String.format("%,d", team2_total) + "**", getScoreFormat(slot, team2_scores), false);
