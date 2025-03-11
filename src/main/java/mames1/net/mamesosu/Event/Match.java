@@ -176,7 +176,7 @@ public class Match extends ListenerAdapter {
     public void startSchedule(ModalInteractionEvent e) {
         final int[] size = {0};
 
-        e.getJDA().getPresence().setActivity(Activity.watching("マッチを開始します!"));
+        e.getJDA().getPresence().setActivity(Activity.watching("マッチを開始します"));
 
         Timer timer = new Timer();
         TimerTask timerTask = new TimerTask() {
@@ -191,6 +191,7 @@ public class Match extends ListenerAdapter {
 
                 if (!jsonNode.get("match").get("end_time").asText().equals("null")) {
                     System.out.println("end");
+                    e.getJDA().getPresence().setActivity(Activity.playing("試合開始を待機しています"));
                     timer.cancel();
                     return;
                 }
