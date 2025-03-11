@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import mames1.net.mamesosu.Embed;
 import mames1.net.mamesosu.Main;
-import mames1.net.mamesosu.Object.MySQL;
 import mames1.net.mamesosu.Utils.Modal;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Activity;
@@ -31,30 +30,15 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static javax.sql.rowset.spi.SyncFactory.setLogger;
-
 public class Match extends ListenerAdapter {
 
     public static String getMapName(int beatmap, int mode) throws SQLException {
 
-        MySQL mySQL = new MySQL();
-        Connection connection = mySQL.getConnection();
-        PreparedStatement ps;
-        ResultSet result;
-
         String API = "https://osu.ppy.sh/api/get_beatmaps?k=" + Main.tourney.getApi() + "&b=" + beatmap + "&m=" + mode;
-        String slot = null;
+        String slot;
         JsonNode jsonNode = getNodeData(API).get(0);
 
-        ps = connection.prepareStatement("select category from beatmaps where beatmapid = ?");
-        ps.setInt(1, beatmap);
-        result = ps.executeQuery();
-
-        if (result.next()) {
-            slot = result.getString("category");
-        }
-
-        connection.close();
+        slot = Main.tourney.getMaps().get(beatmap);
 
         return slot + " | " + jsonNode.get("artist_unicode").asText() + " - " + jsonNode.get("title_unicode").asText() + " [" + jsonNode.get("version").asText() + "]";
     }
@@ -88,25 +72,8 @@ public class Match extends ListenerAdapter {
     }
 
     private static boolean checkBeatmap(int beatmap) {
-        MySQL mySQL = new MySQL();
-        Connection connection = null;
-        PreparedStatement ps;
-        ResultSet result;
 
-        try {
-            connection = mySQL.getConnection();
-            ps = connection.prepareStatement("select * from beatmaps where beatmapid = ?");
-            ps.setInt(1, beatmap);
-            result = ps.executeQuery();
-
-            if(result.next()) {
-                return true;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return false;
+        return Main.tourney.getMaps().get(beatmap).isEmpty();
     }
 
 
@@ -360,26 +327,9 @@ public class Match extends ListenerAdapter {
             return "https://osu.ppy.sh/beatmaps/" + Integer.parseInt(jsonNode.get("beatmapset_id").asText()) + "#" + mode_str[mode] + "/" + jsonNode.get("beatmap_id").asText();
         }
 
-         private String loadSlot(int beatmap_id) {
-        MySQL mySQL = new MySQL();
-
-        try {
-            Connection connection = mySQL.getConnection();
-            PreparedStatement ps;
-            ResultSet result;
-
-            ps = connection.prepareStatement("select category from beatmaps where beatmapid = ?");
-            ps.setInt(1, beatmap_id);
-            result = ps.executeQuery();
-
-            if(result.next()) {
-                return result.getString("category");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        private String loadSlot(int beatmap_id) {
+            return Main.tourney.getMaps().get(beatmap_id);
         }
-        return null;
-    }
 
         public int getMode() {
             return mode;

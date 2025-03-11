@@ -10,12 +10,16 @@ import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
 
+import java.io.File;
+import java.nio.file.Files;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 // トーナメントの進捗を管理する
 public class Tourney {
@@ -34,6 +38,8 @@ public class Tourney {
     List<String> team1BanList = new ArrayList<>();
     List<String> team2BanList = new ArrayList<>();
 
+    Map<Integer, String> maps = new HashMap<>();
+
     public Tourney () {
         Dotenv dotenv = Dotenv.configure().load();
         this.api = dotenv.get("API");
@@ -45,6 +51,10 @@ public class Tourney {
 
     public void setMpID(int id) {
         this.mp_id = id;
+    }
+
+    public void setMaps(int beatmap, String slot) {
+        this.maps.put(beatmap, slot);
     }
 
     public int getMpID() {
@@ -111,6 +121,10 @@ public class Tourney {
         }
     }
 
+    public Map<Integer, String> getMaps() {
+        return maps;
+    }
+
     public void addBanList() {
         currentlyBanCount++;
     }
@@ -131,7 +145,6 @@ public class Tourney {
         return this.currentlyBanTeam;
     }
 
-
     public List<String> getBanList(int team) {
         if (team == 1) {
             return team1BanList;
@@ -148,19 +161,13 @@ public class Tourney {
         return this.banCount;
     }
 
-    public StringSelectMenu.Builder loadMapsBuilder() throws SQLException {
-        MySQL mySQL = Main.mySQL;
-        Connection connection = mySQL.getConnection();
-        PreparedStatement ps;
-        ResultSet result;
+    public StringSelectMenu.Builder loadMapsBuilder() {
 
         StringSelectMenu.Builder builder = StringSelectMenu.create("ban_map:dropdown");
 
-        ps = connection.prepareStatement("select * from beatmaps");
-        result = ps.executeQuery();
-        while(result.next()) {
+        for(Map.Entry<Integer, String> entry : maps.entrySet()) {
             builder.addOption(
-                    result.getString("category").toUpperCase(), "ban_" + result.getString("category").toLowerCase()
+                    entry.getValue().toUpperCase(), "ban_" + entry.getValue().toLowerCase()
             );
         }
 
@@ -200,10 +207,20 @@ public class Tourney {
                         message.delete().queue();
                     }
 
-                    jda.getTextChannelById(bot.getManageChannelId()).sendMessageEmbeds(Embed.getSelectBanEmbed().build())
+                    File dir = new File("load");
+                    File files[] = dir.listFiles();
+                    StringSelectMenu.Builder builder = StringSelectMenu.create("load_map:dropdown");
+
+                    for(int i = 0; i < files.length; i++) {
+                        String file_name = files[i].getName();
+                        if(file_name.endsWith(".cfg")) {
+                            builder.addOption(file_name.replace(".cfg", ""), "load_" + file_name.replace(".cfg", ""));
+                        }
+                    }
+
+                    jda.getTextChannelById(bot.getManageChannelId()).sendMessageEmbeds(Embed.getSelectLoadFile().build())
                         .addActionRow(
-                        Button.danger("btn_f_ban_team1", "Red"),
-                        Button.primary("btn_f_ban_team2", "Blue")
+                            builder.build()
                         ).queue();
                 });
     }

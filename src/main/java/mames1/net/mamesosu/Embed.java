@@ -7,6 +7,15 @@ import java.util.Date;
 
 public abstract class Embed {
 
+    public static EmbedBuilder getSelectLoadFile() {
+        EmbedBuilder eb = new EmbedBuilder();
+        eb.setTitle("**トーナメントのセットアップ**");
+        eb.setDescription("読み込みたいマッププールを選択してください。");
+        eb.setTimestamp(new Date().toInstant());
+
+        return eb;
+    }
+
     public static EmbedBuilder getSelectBanEmbed() {
         EmbedBuilder eb = new EmbedBuilder();
         eb.setTitle("**トーナメントのセットアップ**");
@@ -76,8 +85,6 @@ public abstract class Embed {
                 msg.toString() + "\n" +
                 "First Pickはどのチームにしますか？");
         eb.setTimestamp(new Date().toInstant());
-        eb.setColor(Color.GREEN);
-
         return eb;
     }
 

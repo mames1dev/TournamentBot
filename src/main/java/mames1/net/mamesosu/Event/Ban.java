@@ -38,20 +38,16 @@ public class Ban extends ListenerAdapter {
 
             // for文になってますが実際にはループしません (getvalues()はList<String>を返すため)
             for(String value : e.getValues()) {
-                try {
-                    Main.tourney.setBanCount(Integer.parseInt(value.replace("cnt_", "")));
+                Main.tourney.setBanCount(Integer.parseInt(value.replace("cnt_", "")));
 
-                    e.getMessage().editMessageEmbeds(e.getMessage().getEmbeds()).setComponents().queue();
+                e.getMessage().editMessageEmbeds(e.getMessage().getEmbeds()).setComponents().queue();
 
-                    // Banするマップを選択する (1回目)
-                    e.replyEmbeds(
-                            Embed.getBanMapEmbed(Main.tourney.getFirstBanTeam(), Main.tourney.getBanCount()).build()
-                    ).addActionRow(
-                            Main.tourney.loadMapsBuilder().build()
-                    ).queue();
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
+                // Banするマップを選択する (1回目)
+                e.replyEmbeds(
+                        Embed.getBanMapEmbed(Main.tourney.getFirstBanTeam(), Main.tourney.getBanCount()).build()
+                ).addActionRow(
+                        Main.tourney.loadMapsBuilder().build()
+                ).queue();
             }
         // 2回目以降のBan
         } else if(e.getComponentId().equals("ban_map:dropdown")) {
