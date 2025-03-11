@@ -146,11 +146,11 @@ public class Match extends ListenerAdapter {
 
         if (slot.toUpperCase().contains("FM")) {
             for (Score score : scores) {
-                msg.append(score.getUserName()).append(": ").append(String.format("%,d", score.getScore())).append(" ").append(String.format("%.2f", score.getAcc())).append("%").append("\n");
+                msg.append(score.getUserName()).append(": ").append(String.format("%,d", score.getScore())).append(" ").append(String.format("%.2f", score.getAcc())).append("%").append(" | ").append(getModsName(score.getEnabled_mods())).append("\n");
             }
         } else {
             for (Score score : scores) {
-                msg.append(score.getUserName()).append(": ").append(String.format("%,d", score.getScore())).append(" ").append(String.format("%.2f", score.getAcc())).append("%").append(" | ").append(getModsName(score.getEnabled_mods())).append("\n");
+                msg.append(score.getUserName()).append(": ").append(String.format("%,d", score.getScore())).append(" ").append(String.format("%.2f", score.getAcc())).append("%").append("\n");
             }
         }
 
