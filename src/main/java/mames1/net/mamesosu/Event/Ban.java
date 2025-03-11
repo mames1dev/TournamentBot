@@ -62,8 +62,8 @@ public class Ban extends ListenerAdapter {
                     e.replyEmbeds(
                             Embed.getBanEndEmbed().build()
                     ).addActionRow(
-                            Button.danger("btn_first_pick_1", "Red"),
-                            Button.primary("btn_first_pick_2", "Blue")
+                            Button.danger("btn_first_pick_1", Main.tourney.getTeamName(1)),
+                            Button.primary("btn_first_pick_2", Main.tourney.getTeamName(2))
                     ).queue();
                     return;
             }

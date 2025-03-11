@@ -20,10 +20,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.http.HttpClient;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.List;
@@ -181,23 +177,23 @@ public class Match extends ListenerAdapter {
 
                         EmbedBuilder eb = new EmbedBuilder();
                         eb.setTitle("**" +  jsonNode.get("match").get("name").asText() + "**", "https://osu.ppy.sh/community/matches/" + Main.tourney.getMpID());
-                        eb.setDescription((team1_total > team2_total ? ":medal:" : "") + ":red_circle: Red | 点 : " + String.format("%,d", Math.abs(team1_total - team2_total)) + " | **" + Main.tourney.getTeam_point(1) + " - " + Main.tourney.getTeam_point(2) + "** | Blue :blue_circle:" + (team1_total < team2_total ? " :medal:" : ""));
-                        eb.addField("**Bans**",  ":red_circle: Red: **" + Main.tourney.getBanList(1).toString().toUpperCase() + "**\n:blue_circle: Blue **" + Main.tourney.getBanList(2).toString().toUpperCase() + "**", false);
-
-                        sb.append("First Pick: **").append(Main.tourney.getFirstPickTeam() == 1 ? ":red_circle: Red**" : ":blue_circle: Blue**").append("\n");
+                        eb.setDescription((team1_total > team2_total ? ":medal:" : "") + ":red_circle: ``" + Main.tourney.getTeamName(1) + "``  | スコア差 : **" + String.format("%,d", Math.abs(team1_total - team2_total)) + "** | **" + Main.tourney.getTeam_point(1) + " - " + Main.tourney.getTeam_point(2) + "** | ``" + Main.tourney.getTeamName(2) + "`` :blue_circle:" + (team1_total < team2_total ? " :medal:" : ""));
+                        eb.addField("**Bans**",  ":red_circle: ``" + Main.tourney.getTeamName(1) +"``: **" + Main.tourney.getBanList(1).toString().toUpperCase() + "**\n:blue_circle: ``" + Main.tourney.getTeamName(2) +"``: **" + Main.tourney.getBanList(2).toString().toUpperCase() + "**", false);
+                        eb.addField("**First Pick**", Main.tourney.getFirstPickTeam() == 1 ? ":red_circle: ``" + Main.tourney.getTeamName(1) + "``" : ":blue_circle: ``" + Main.tourney.getTeamName(2) + "``", false);
 
                         int team_tmp = Main.tourney.getFirstPickTeam();
                         for(int i = 0; i < Main.tourney.getWinTeam().size(); i++) {
                             if (Main.tourney.getPickedMaps().get(i).toLowerCase().contains("tb")) {
-                                sb.append(":fire: picks ``").append(Main.tourney.getPickedMaps().get(i)).append("``, ").append(Main.tourney.getWinTeam().get(i) == 1 ? ":red_circle:" : ":blue_circle:").append(" wins!\n");
+                                sb.append(":fire: ``").append(Main.tourney.getTeamName(team_tmp == 1 ? 1 : 2)).append("`` が **").append(Main.tourney.getPickedMaps().get(i)).append("** をピックし, ").append(Main.tourney.getWinTeam().get(i) == 1 ? ":red_circle: ``" : ":blue_circle: ``").append(Main.tourney.getTeamName(Main.tourney.getWinTeam().get(i))) .append("`` が勝利しました!\n");
                             } else {
-                                sb.append(team_tmp == 1 ? ":red_circle:" : ":blue_circle:").append(" picks ``").append(Main.tourney.getPickedMaps().get(i)).append("``, ").append(Main.tourney.getWinTeam().get(i) == 1 ? ":red_circle:" : ":blue_circle:").append(" wins!\n");
+                                sb.append(team_tmp == 1 ? ":red_circle: " : ":blue_circle: ``").append(Main.tourney.getTeamName(team_tmp == 1 ? 1 : 2)).append("`` が **").append(Main.tourney.getPickedMaps().get(i)).append("** をピックし, ").append(Main.tourney.getWinTeam().get(i) == 1 ? ":red_circle: ``" : ":blue_circle: ``").append(Main.tourney.getTeamName(Main.tourney.getWinTeam().get(i))) .append("`` が勝利しました!\n");
                             }
                             team_tmp = team_tmp == 1 ? 2 : 1;
                         }
 
-                        eb.addField("**Match Rundown**", sb.toString(), false);
+                        eb.addField("**試合結果**", sb.toString(), false);
                         eb.setColor(team1_total > team2_total ? Color.RED : Color.BLUE);
+                        eb.setTimestamp(new Date().toInstant());
 
                         e.getJDA().getTextChannelById(Main.bot.getTourneyChannelId()).sendMessageEmbeds(
                                 eb.build()
@@ -286,15 +282,17 @@ public class Match extends ListenerAdapter {
 
                 Main.tourney.setTeam_point(team1_total > team2_total ? 1 : 2);
 
-                e.getJDA().getPresence().setActivity(Activity.watching("Red " + Main.tourney.getTeam_point(1) + " - " + Main.tourney.getTeam_point(2) + " Blue"));
+                e.getJDA().getPresence().setActivity(Activity.watching( Main.tourney.getTeamName(1) + " " + Main.tourney.getTeam_point(1) + " - " + Main.tourney.getTeam_point(2) + " " + Main.tourney.getTeamName(2)));
 
-                eb.addField("**:red_circle: Redチーム " + String.format("%,d", team1_total) + "**", getScoreFormat(slot, team1_scores), false);
-                eb.addField("**:blue_circle: Blueチーム " + String.format("%,d", team2_total) + "**", getScoreFormat(slot, team2_scores), false);
+                eb.addField("**:red_circle: " + Main.tourney.getTeamName(1) +  " " + String.format("%,d", team1_total) + "**", getScoreFormat(slot, team1_scores), false);
+                eb.addField("**:blue_circle: " + Main.tourney.getTeamName(2) + " " + String.format("%,d", team2_total) + "**", getScoreFormat(slot, team2_scores), false);
 
-                eb.addField("**結果**",   "**" + String.format("%,d", Math.abs(team1_total - team2_total)) + "**点差で" + (team1_total > team2_total ? "Red" : "Blue") + "チームの勝利\n\n" +
-                        "Red " + "** " + String.format("%,d", Main.tourney.getTeam_point(1)) + "** - **" + String.format("%,d", Main.tourney.getTeam_point(2)) + "** Blue", false);
+                eb.addField("**結果**",   "**" + String.format("%,d", Math.abs(team1_total - team2_total)) + "** 点差で, チーム ``" + (team1_total > team2_total ? Main.tourney.getTeamName(1) : Main.tourney.getTeamName(2)) + "`` の勝利\n\n``" +
+                        Main.tourney.getTeamName(1) + "`` " + "** " + String.format("%,d", Main.tourney.getTeam_point(1)) + "** - **" + String.format("%,d", Main.tourney.getTeam_point(2)) + "** ``" + Main.tourney.getTeamName(2) + "``", false);
 
-                eb.setFooter("Picked by " + (Main.tourney.getCurrentlyPickTeam() == 1 ? "Red" : "Blue") + "チーム", null);
+                eb.setFooter("Picked by " + "チーム" +  (Main.tourney.getCurrentlyPickTeam() == 1 ? Main.tourney.getTeamName(1) : Main.tourney.getTeamName(2)), null);
+
+                eb.setTimestamp(new Date().toInstant());
 
                 e.getJDA().getTextChannelById(Main.bot.getTourneyChannelId()).sendMessageEmbeds(
                         eb.build()

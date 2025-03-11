@@ -35,6 +35,10 @@ public class Tourney {
     int currentlyPickTeam;
     boolean scoreSent = false;
     String api;
+
+    String team1_name;
+    String team2_name;
+
     List<String> team1BanList = new ArrayList<>();
     List<String> team2BanList = new ArrayList<>();
     Map<Integer, List<Integer>> totalScores = new HashMap<>();
@@ -46,6 +50,22 @@ public class Tourney {
     public Tourney () {
         Dotenv dotenv = Dotenv.configure().load();
         this.api = dotenv.get("API");
+    }
+
+    public void setTeamName(int team, String name) {
+        if (team == 1) {
+            team1_name = name;
+        } else {
+            team2_name = name;
+        }
+    }
+
+    public String getTeamName(int team) {
+        if (team == 1) {
+            return team1_name;
+        } else {
+            return team2_name;
+        }
     }
 
     public void setWinTeam(int team) {
