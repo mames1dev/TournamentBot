@@ -181,7 +181,7 @@ public class Match extends ListenerAdapter {
                     return;
                 }
 
-                if (!lastGameNode.get("scoring_type").asText().equals("3")) {
+                if (!lastGameNode.get("team_type").asText().equals("2")) {
                     System.out.println("scoring type error");
                     return;
                 }
