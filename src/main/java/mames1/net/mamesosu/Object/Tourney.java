@@ -25,6 +25,8 @@ public class Tourney {
     int banCount;
     int currentlyBanCount = 0;
     int currentlyBanTeam = 0;
+    int team1_point = 0;
+    int team2_point = 0;
     int mp_id;
     int currentlyPickTeam;
     boolean scoreSent = false;
@@ -47,6 +49,22 @@ public class Tourney {
 
     public int getMpID() {
         return this.mp_id;
+    }
+
+        public void setTeam_point(int team) {
+        if (team == 1) {
+            team1_point++;
+        } else {
+            team2_point++;
+        }
+    }
+
+    public int getTeam_point(int team) {
+        if (team == 1) {
+            return team1_point;
+        } else {
+            return team2_point;
+        }
     }
 
     public void setScoreSent(boolean scoreSent) {
