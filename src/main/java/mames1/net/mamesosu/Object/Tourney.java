@@ -37,12 +37,47 @@ public class Tourney {
     String api;
     List<String> team1BanList = new ArrayList<>();
     List<String> team2BanList = new ArrayList<>();
+    Map<Integer, List<Integer>> totalScores = new HashMap<>();
+    List<String> pickedMaps = new ArrayList<>();
+    List<Integer> winTeam = new ArrayList<>();
 
     Map<Integer, String> maps = new HashMap<>();
 
     public Tourney () {
         Dotenv dotenv = Dotenv.configure().load();
         this.api = dotenv.get("API");
+    }
+
+    public void setWinTeam(int team) {
+        winTeam.add(team);
+    }
+
+    public List<Integer> getWinTeam() {
+        return winTeam;
+    }
+
+    public void setPickedMaps(String map) {
+        pickedMaps.add(map);
+    }
+
+    public List<String> getPickedMaps() {
+        return pickedMaps;
+    }
+
+    public void setScores(int team, int score) {
+        if (totalScores.containsKey(team)) {
+            List<Integer> scores = totalScores.get(team);
+            scores.add(score);
+            totalScores.put(team, scores);
+        } else {
+            List<Integer> scores = new ArrayList<>();
+            scores.add(score);
+            totalScores.put(team, scores);
+        }
+    }
+
+    public Map<Integer, List<Integer>> getTotalScores() {
+        return totalScores;
     }
 
     public String getApi() {
@@ -167,7 +202,7 @@ public class Tourney {
 
         for(Map.Entry<Integer, String> entry : maps.entrySet()) {
             builder.addOption(
-                    entry.getValue().toUpperCase(), "ban_" + entry.getValue().toLowerCase()
+                    entry.getValue().toUpperCase(), entry.getValue().toUpperCase()
             );
         }
 

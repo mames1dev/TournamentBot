@@ -47,13 +47,13 @@ public abstract class Embed {
         Color[] teamColor = {Color.RED, Color.BLUE};
 
         for(String s : Main.tourney.getBanList(1)) {
-            msg.append(s.replace("ban_", "**").toUpperCase()).append("** ");
+            msg.append("**").append(s).append("** ");
         }
 
         msg.append("\nTeam2: ");
 
         for (String s : Main.tourney.getBanList(2)) {
-            msg.append(s.replace("ban_", "**").toUpperCase()).append("** ");
+            msg.append("**").append(s).append("** ");
         }
 
         eb.setTitle("**トーナメントのセットアップ**");
@@ -70,13 +70,13 @@ public abstract class Embed {
         StringBuilder msg = new StringBuilder("Team1: ");
 
         for(String s : Main.tourney.getBanList(1)) {
-            msg.append(s.replace("ban_", "**").toUpperCase()).append("** ");
+            msg.append("**").append(s).append("** ");
         }
 
         msg.append("\nTeam2: ");
 
         for (String s : Main.tourney.getBanList(2)) {
-            msg.append(s.replace("ban_", "**").toUpperCase()).append("** ");
+            msg.append("**").append(s).append("** ");
         }
 
 

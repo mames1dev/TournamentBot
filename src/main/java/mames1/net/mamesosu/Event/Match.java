@@ -34,13 +34,24 @@ public class Match extends ListenerAdapter {
 
     public static String getMapName(int beatmap, int mode) throws SQLException {
 
-        String API = "https://osu.ppy.sh/api/get_beatmaps?k=" + Main.tourney.getApi() + "&b=" + beatmap + "&m=" + mode;
+        String API = "https://osu.ppy.sh/api/get_beatmaps?k=" + Main.tourney.getApi() + "&b=" + beatmap;
         String slot;
+
+        System.out.println(API);
+
         JsonNode jsonNode = getNodeData(API).get(0);
+
+        System.out.println(jsonNode);
 
         slot = Main.tourney.getMaps().get(beatmap);
 
-        return slot + " | " + jsonNode.get("artist_unicode").asText() + " - " + jsonNode.get("title_unicode").asText() + " [" + jsonNode.get("version").asText() + "]";
+        return slot + " | "
+            + (jsonNode != null ? jsonNode.get("artist_unicode").asText() : "Unknown Artist")
+            + " - "
+            + (jsonNode != null ? jsonNode.get("title_unicode").asText() : "Unknown Title")
+            + " ["
+            + (jsonNode != null ? jsonNode.get("version").asText() : "Unknown Version")
+            + "]";
     }
 
     private static String getModsName(int n) {
@@ -142,6 +153,7 @@ public class Match extends ListenerAdapter {
 
     public void startSchedule(ModalInteractionEvent e) {
         final int[] size = {0};
+        final boolean[] isOnceSend = {false};
 
         e.getJDA().getPresence().setActivity(Activity.watching("マッチを開始します"));
 
@@ -160,6 +172,37 @@ public class Match extends ListenerAdapter {
                     System.out.println("end");
                     e.getJDA().getPresence().setActivity(Activity.playing("試合開始を待機しています"));
                     timer.cancel();
+
+                    if (isOnceSend[0]) {
+
+                        StringBuilder sb = new StringBuilder();
+                        int team1_total = Main.tourney.getTotalScores().get(1).stream().mapToInt(Integer::intValue).sum();
+                        int team2_total = Main.tourney.getTotalScores().get(2).stream().mapToInt(Integer::intValue).sum();
+
+                        EmbedBuilder eb = new EmbedBuilder();
+                        eb.setTitle("**" +  jsonNode.get("match").get("name").asText() + "**", "https://osu.ppy.sh/community/matches/" + Main.tourney.getMpID());
+                        eb.setDescription((team1_total > team2_total ? ":medal:" : "") + ":red_circle: Red | 点 : " + String.format("%,d", Math.abs(team1_total - team2_total)) + " | **" + Main.tourney.getTeam_point(1) + " - " + Main.tourney.getTeam_point(2) + "** | Blue :blue_circle:" + (team1_total < team2_total ? " :medal:" : ""));
+                        eb.addField("**Bans**",  ":red_circle: Red: **" + Main.tourney.getBanList(1).toString().toUpperCase() + "**\n:blue_circle: Blue **" + Main.tourney.getBanList(2).toString().toUpperCase() + "**", false);
+
+                        sb.append("First Pick: **").append(Main.tourney.getFirstPickTeam() == 1 ? ":red_circle: Red**" : ":blue_circle: Blue**").append("\n");
+
+                        int team_tmp = Main.tourney.getFirstPickTeam();
+                        for(int i = 0; i < Main.tourney.getWinTeam().size(); i++) {
+                            if (Main.tourney.getPickedMaps().get(i).toLowerCase().contains("tb")) {
+                                sb.append(":fire: picks ``").append(Main.tourney.getPickedMaps().get(i)).append("``, ").append(Main.tourney.getWinTeam().get(i) == 1 ? ":red_circle:" : ":blue_circle:").append(" wins!\n");
+                            } else {
+                                sb.append(team_tmp == 1 ? ":red_circle:" : ":blue_circle:").append(" picks ``").append(Main.tourney.getPickedMaps().get(i)).append("``, ").append(Main.tourney.getWinTeam().get(i) == 1 ? ":red_circle:" : ":blue_circle:").append(" wins!\n");
+                            }
+                            team_tmp = team_tmp == 1 ? 2 : 1;
+                        }
+
+                        eb.addField("**Match Rundown**", sb.toString(), false);
+                        eb.setColor(team1_total > team2_total ? Color.RED : Color.BLUE);
+
+                        e.getJDA().getTextChannelById(Main.bot.getTourneyChannelId()).sendMessageEmbeds(
+                                eb.build()
+                        ).queue();
+                    }
                     return;
                 }
 
@@ -257,6 +300,12 @@ public class Match extends ListenerAdapter {
                         eb.build()
                 ).queue();
 
+                Main.tourney.setScores(1, team1_total);
+                Main.tourney.setScores(2, team2_total);
+                Main.tourney.setPickedMaps(slot);
+                Main.tourney.setWinTeam(team1_total > team2_total ? 1 : 2);
+                isOnceSend[0] = true;
+
                 System.out.println("送信しました");
             }
         };
@@ -320,7 +369,7 @@ public class Match extends ListenerAdapter {
         }
 
         public String getURL(int beatmap, int mode) {
-            String API = "https://osu.ppy.sh/api/get_beatmaps?k=" + Main.tourney.getApi() + "&b=" + beatmap + "&m=" + mode;
+            String API = "https://osu.ppy.sh/api/get_beatmaps?k=" + Main.tourney.getApi() + "&b=" + beatmap;
             JsonNode jsonNode = Match.getNodeData(API).get(0);
             String[] mode_str = {"osu", "taiko", "fruits", "mania"};
 
