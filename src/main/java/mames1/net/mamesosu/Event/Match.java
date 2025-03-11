@@ -240,10 +240,11 @@ public class Match extends ListenerAdapter {
 
                 Main.tourney.setTeam_point(team1_total > team2_total ? 1 : 2);
 
-                eb.addField("**:red_circle: Redチーム " + String.format("%,d", team1_total) + "** (" + String.format("%,d", Main.tourney.getTeam_point(1)) + ")", getScoreFormat(slot, team1_scores), false);
-                eb.addField("**:blue_circle: Blueチーム " + String.format("%,d", team2_total) + "** (" + String.format("%,d", Main.tourney.getTeam_point(2)) + ")", getScoreFormat(slot, team2_scores), false);
+                eb.addField("**:red_circle: Redチーム " + String.format("%,d", team1_total) + "**", getScoreFormat(slot, team1_scores), false);
+                eb.addField("**:blue_circle: Blueチーム " + String.format("%,d", team2_total) + "**", getScoreFormat(slot, team2_scores), false);
 
-                eb.addField("**結果**", Math.abs(team1_total - team2_total) + "点差で" + (team1_total > team2_total ? "Red" : "Blue") + "チームの勝利", false);
+                eb.addField("**結果**",   "**" + String.format("%,d", Math.abs(team1_total - team2_total)) + "**点差で" + (team1_total > team2_total ? "Red" : "Blue") + "チームの勝利\n\n" +
+                        "Red " + "** " + String.format("%,d", Main.tourney.getTeam_point(1)) + "** - **" + String.format("%,d", Main.tourney.getTeam_point(2)) + "** Blue", false);
 
                 eb.setFooter("Picked by " + (Main.tourney.getCurrentlyPickTeam() == 1 ? "Red" : "Blue") + "チーム", null);
 
